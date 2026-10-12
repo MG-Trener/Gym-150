@@ -18,7 +18,7 @@ function selectSession(id){
 function renderCalendar(){
   const session=plan.sessions.find(s=>s.id===selected);
   const weeks=document.querySelector('#weeks');weeks.replaceChildren();
-  for(let n=1;n<=Math.max(...plan.sessions.map(s=>s.week));n++){
+  for(const n of [...new Set(plan.sessions.map(s=>s.week))]){
     const b=document.createElement('button');b.type='button';b.className='week'+(n===session.week?' active':'');b.textContent='Неделя '+n;b.setAttribute('aria-pressed',n===session.week);
     b.addEventListener('click',()=>selectSession(plan.sessions.find(s=>s.week===n).id));weeks.append(b);
   }
@@ -27,7 +27,8 @@ function renderCalendar(){
     const d=new Date(s.date+'T12:00:00Z');
     const b=document.createElement('button');b.type='button';b.className='session'+(s.id===selected?' active':'');b.setAttribute('aria-current',s.id===selected?'date':'false');
     b.innerHTML='<span class="session-date">'+d.getUTCDate()+' '+months[d.getUTCMonth()]+'</span><span class="session-title"></span>';
-    b.querySelector('.session-title').textContent=s.title;
+    const status=window.Planner?.sessionStatus(s.id);
+    b.querySelector('.session-title').textContent=(status==='done'?'✓ ':status==='skipped'?'— ':'')+s.title;
     b.addEventListener('click',()=>selectSession(s.id));days.append(b);
   }
 }
@@ -40,8 +41,8 @@ function renderMainTable(ex){
   const tbody=section.querySelector('tbody');
   ex.sets.forEach((set,i)=>{
     const tr=document.createElement('tr');if(set.rpe)tr.className='heavy';
-    const kind=set.kind+(set.rpe?' · RPE ≤8':'');
-    [i+1,weight(set.weight),set.reps,rest(set.rest),kind].forEach((value,j)=>{
+    const kind=set.kind+(set.rpe&&!set.kind.includes('≤8')?' · RPE':'');
+    [i+1,set.weight===null?'подбор':weight(set.weight),set.reps,rest(set.rest),kind].forEach((value,j)=>{
       const td=document.createElement('td');td.textContent=value;if(j===4)td.className='kind';tr.append(td);
     });
     tbody.append(tr);
@@ -49,7 +50,7 @@ function renderMainTable(ex){
   return section;
 }
 function renderAccessory(ex){
-  const section=document.createElement('section');section.className='accessory',sets=ex.sets;
+  const section=document.createElement('section');section.className='accessory';const sets=ex.sets;
   section.innerHTML='<img class="accessory-image" alt="" width="48" height="48" loading="lazy" decoding="async"><div class="accessory-body"><div class="accessory-title"><h4></h4><span class="accessory-prescription"></span></div><p class="accessory-meta"></p></div>';
   const illustration=accessoryImages[ex.name];
   if(illustration)section.querySelector('.accessory-image').src='assets/'+illustration;
@@ -67,7 +68,8 @@ function renderDetail(){
   const top=document.createElement('div');top.className='detail-top';top.innerHTML='<div><span class="detail-date"></span><h2></h2></div><span class="day-count"></span>';
   top.querySelector('.detail-date').textContent=fullDate(s.date);
   top.querySelector('h2').textContent=s.title;
-  top.querySelector('.day-count').textContent='День '+(plan.sessions.indexOf(s)+1)+' / '+plan.sessions.length;
+  const dayCount=top.querySelector('.day-count');dayCount.textContent='День '+(plan.sessions.indexOf(s)+1)+' / '+plan.sessions.length;
+  const logButton=document.createElement('button');logButton.type='button';logButton.className='log-button';logButton.textContent='Записать факт';logButton.addEventListener('click',()=>window.Planner.openLog());dayCount.append(logButton);
   box.append(top);
   const content=document.createElement('div');content.className='detail-content';content.append(renderMainTable(s.exercises[0]));
   const aside=document.createElement('aside');aside.className='accessories';
@@ -76,9 +78,5 @@ function renderDetail(){
   content.append(aside);box.append(content);
 }
 fetch('plan.json').then(r=>{if(!r.ok)throw Error('План недоступен');return r.json()}).then(data=>{
-  plan=data;
-  const today=new Date().toLocaleDateString('en-CA',{timeZone:'Asia/Qyzylorda'});
-  selected=plan.sessions.find(s=>'#'+s.id===location.hash)?.id||plan.sessions.find(s=>s.date>=today)?.id||plan.sessions.at(-1).id;
-  renderCalendar();renderDetail();
-  const rules=document.querySelector('#rules');data.rules.forEach(value=>{const li=document.createElement('li');li.textContent=value;rules.append(li)});
+  window.Planner.boot(data);
 }).catch(e=>{document.querySelector('#detail').textContent='Не удалось загрузить план: '+e.message});
