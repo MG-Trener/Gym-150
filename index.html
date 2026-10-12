@@ -6,10 +6,11 @@
   <meta name="theme-color" content="#101615">
   <meta name="description" content="Своя программа жима лёжа: расчёт нагрузки, фиксированный календарь, журнал подходов и резервные копии. Без фармакологии.">
   <title>Путь к 150 кг · План жима</title>
-  <link rel="stylesheet" href="style.css?v=20261012">
-  <script src="generator.js?v=20261012" defer></script>
-  <script src="planner.js?v=20261012" defer></script>
-  <script src="app.js?v=20261012" defer></script>
+  <link rel="stylesheet" href="style.css?v=20261012b">
+  <script src="generator.js?v=20261012b" defer></script>
+  <script src="engine-v2.js?v=20261012b" defer></script>
+  <script src="planner.js?v=20261012b" defer></script>
+  <script src="app.js?v=20261012b" defer></script>
 </head>
 <body>
   <header class="topbar"><div class="brand">MG<span>150</span></div><div class="topbar-right"><button id="new-plan" type="button">Создать план</button><button id="data-button" type="button">Мои данные</button></div></header>
@@ -62,5 +63,6 @@
   </dialog>
   <dialog id="data-dialog" aria-labelledby="data-title"><div class="dialog-heading"><h2 id="data-title">Мои данные</h2><button type="button" data-close>Закрыть</button></div><p>Планы и результаты хранятся в этом браузере. Через неделю откроется тот же календарь. Пропущенные тренировки не переносятся автоматически.</p><p>Очистка данных браузера или режим инкогнито могут удалить записи. Скачайте резервную копию; её можно открыть на другом устройстве. Автоматической синхронизации с MGym и другими устройствами пока нет.</p><div class="actions"><button id="export-data" type="button">Скачать резервную копию</button><label class="file-label">Загрузить копию<input id="import-data" type="file" accept="application/json,.json"></label></div><p id="data-message" role="status"></p><div id="import-preview" hidden><p id="import-summary"></p><button id="confirm-import" type="button" class="primary">Добавить планы из копии</button></div></dialog>
   <dialog id="log-dialog" aria-labelledby="log-title"><div class="dialog-heading"><h2 id="log-title">Результат тренировки</h2><button type="button" data-close>Закрыть</button></div><form id="log-form"><p class="muted">Заполняйте только сделанные подходы. Пустое поле — нет записи. Килограммы указаны как общий вес; для гантели — вес одной гантели.</p><div id="log-sets"></div><div class="form-grid"><label>Статус<select name="status"><option value="planned">Ещё не завершена</option><option value="done">Выполнена</option><option value="skipped">Пропущена</option></select></label><label>Как прошла тренировка<select name="feedback"><option value="ok">Нормально</option><option value="hard">Тяжелее ожидаемого / недовосстановился</option><option value="pain">Была боль</option></select></label></div><p id="log-advice" class="muted"></p><p id="log-error" class="error" role="alert"></p><button class="primary" type="submit">Сохранить результат</button></form></dialog>
+  <dialog id="review-dialog" aria-labelledby="review-title"><div class="dialog-heading"><h2 id="review-title">Проверка нагрузки</h2><button type="button" data-close>Закрыть</button></div><p id="review-message"></p><p class="muted">Меняются только будущие незаписанные тренировки. Расписание, прошедшие дни и фактические подходы сохраняются. Повторно одна тренировка не учитывается.</p><button id="apply-review" type="button" class="primary" hidden>Применить поправку к будущим весам</button></dialog>
 </body>
 </html>

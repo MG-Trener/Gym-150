@@ -74,7 +74,7 @@ function renderDetail(){
   const content=document.createElement('div');content.className='detail-content';content.append(renderMainTable(s.exercises[0]));
   const aside=document.createElement('aside');aside.className='accessories';
   if(s.exercises.length>1){const title=document.createElement('h3');title.textContent='После жима';aside.append(title);s.exercises.slice(1).forEach(ex=>aside.append(renderAccessory(ex)))}
-  const note=document.createElement('p');note.className='day-note';note.textContent=s.note;aside.append(note);
+  const note=document.createElement('p');note.className='day-note';note.textContent=(plan.algorithm==='bench-natural-2'&&!s.phase?'Этот день уже записан: исходное назначение сохранено. ':'')+s.note;aside.append(note);
   content.append(aside);box.append(content);
 }
 fetch('plan.json').then(r=>{if(!r.ok)throw Error('План недоступен');return r.json()}).then(data=>{
