@@ -99,8 +99,9 @@
   // Импорт содержит только данные. Ограничения также защищают интерфейс от огромных/повреждённых файлов.
   function validatePlan(p){
     if(!p||typeof p.id!=='string'||p.id.length>100||typeof p.name!=='string'||p.name.length>100||!Array.isArray(p.sessions)||p.sessions.length<1||p.sessions.length>100||!Array.isArray(p.rules)||p.rules.length>30||p.rules.some(s=>typeof s!=='string'||s.length>1500))throw Error('Некорректный формат программы.');
-    if(!/^p-[a-zA-Z0-9-]+$/.test(p.id)||p.algorithm!=='bench-natural-1'||p.version!==1||!p.profile||validate(p.profile).length||!p.meta||!(p.meta.base===null||Number.isFinite(p.meta.base)&&p.meta.base>0)||typeof p.meta.ageGroup!=='string'||!Number.isFinite(p.meta.relativeGoal))throw Error('Повреждены параметры расчёта.');
+    if(!/^p-[a-zA-Z0-9-]+$/.test(p.id)||!['bench-natural-1','bench-natural-2'].includes(p.algorithm)||p.version!==1||!p.profile||validate(p.profile).length||!p.meta||!(p.meta.base===null||Number.isFinite(p.meta.base)&&p.meta.base>0)||typeof p.meta.ageGroup!=='string'||!Number.isFinite(p.meta.relativeGoal))throw Error('Повреждены параметры расчёта.');
     const ids=new Set();let previous='';
+    if(p.meta.reviewed!==undefined){if(!Array.isArray(p.meta.reviewed)||p.meta.reviewed.length>100)throw Error('Повреждена история пересмотра.');p.meta.reviewed.forEach(date);}
     for(const s of p.sessions){
       date(s.date);if(s.id!==s.date||ids.has(s.id)||s.date<=previous||!Number.isInteger(s.week)||s.week<1||s.week>25||typeof s.title!=='string'||s.title.length>100||typeof s.note!=='string'||s.note.length>2000||!Array.isArray(s.exercises)||s.exercises.length<1||s.exercises.length>4)throw Error('Повреждён календарь программы.');ids.add(s.id);previous=s.date;
       for(const ex of s.exercises){if(typeof ex.name!=='string'||ex.name.length>150||typeof ex.load!=='string'||ex.load.length>1500||!Array.isArray(ex.sets)||!ex.sets.length||ex.sets.length>20)throw Error('Повреждено упражнение.');for(const v of ex.sets){if(!(v.weight===null||Number.isFinite(v.weight)&&v.weight>=0&&v.weight<=500)||!Number.isInteger(v.reps)||v.reps<1||v.reps>100||!Number.isFinite(v.rest)||v.rest<0||v.rest>900||typeof v.kind!=='string'||v.kind.length>150||typeof v.rpe!=='boolean')throw Error('Повреждены подходы.');}}
@@ -114,6 +115,7 @@
     for(const [key,log] of Object.entries(v.logs)){
       const split=key.lastIndexOf('|'),pid=key.slice(0,split),sid=key.slice(split+1);date(sid);if(!ids.has(pid)||(pid!=='original'&&!v.plans.find(p=>p.id===pid).sessions.some(s=>s.id===sid)))throw Error('Запись ссылается на неизвестную тренировку.');
       if(key.length>160||!log||!['planned','done','skipped'].includes(log.status)||!['ok','hard','pain'].includes(log.feedback)||!Array.isArray(log.sets)||log.sets.length>80)throw Error('Повреждён журнал.');
+      if(log.verified!==undefined&&typeof log.verified!=='boolean')throw Error('Повреждено подтверждение техники.');
       for(const s of log.sets){for(const [k,max] of [['kg',500],['reps',100],['rpe',10]])if(!(s[k]===null||typeof s[k]==='number'&&Number.isFinite(s[k])&&s[k]>=0&&s[k]<=max))throw Error('Некорректный результат в журнале.');}
     }
     // Не переносим неизвестные корневые поля из файлов.
