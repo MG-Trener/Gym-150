@@ -1,6 +1,6 @@
 'use strict';
 window.Planner=(()=>{
-  const G=window.BenchGenerator, KEY='mg150-planner-v1', BACKUP=KEY+'-before-v3', PROGRESSION_BACKUP=KEY+'-before-progression-v3';
+  const G=window.BenchGenerator, KEY='mg150-planner-v1', BACKUP=KEY+'-before-v3', OLD_PROGRESSION_BACKUP=KEY+'-before-progression', PROGRESSION_BACKUP=KEY+'-before-progression-v3';
   const $=s=>document.querySelector(s), form=$('#generator-form');
   let state={version:1,active:'original',plans:[],logs:{}},original,draft,incoming,lastRaw=null,broken=false,pending=null;
   let discipline=new URLSearchParams(location.search).get('discipline')||'bench';if(!G.disciplines[discipline])discipline='bench';
@@ -148,9 +148,12 @@ window.Planner=(()=>{
   const oldCopy=document.createElement('button');oldCopy.type='button';oldCopy.textContent='Копия до обновления v3';oldCopy.addEventListener('click',()=>{
     try{const raw=localStorage.getItem(BACKUP);if(!raw){$('#data-message').textContent='Прежних программ на этом устройстве не было.';return;}const url=URL.createObjectURL(new Blob([raw],{type:'application/json'}));const a=document.createElement('a');a.href=url;a.download='mg150-before-v3.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}catch(e){$('#data-message').textContent=e.message;}
   });$('#data-dialog .actions').append(oldCopy);
-  const progressionCopy=document.createElement('button');progressionCopy.type='button';progressionCopy.textContent='Копия до исправления прогрессии';progressionCopy.addEventListener('click',()=>{
+  const progressionCopy=document.createElement('button');progressionCopy.type='button';progressionCopy.textContent='Копия до обновления 0.5.2';progressionCopy.addEventListener('click',()=>{
     try{const raw=localStorage.getItem(PROGRESSION_BACKUP);if(!raw){$('#data-message').textContent='Прежних программ в этом браузере не было.';return;}const url=URL.createObjectURL(new Blob([raw],{type:'application/json'}));const a=document.createElement('a');a.href=url;a.download='mg150-before-progression.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}catch(e){$('#data-message').textContent=e.message;}
   });$('#data-dialog .actions').append(progressionCopy);
+  const previousProgressionCopy=document.createElement('button');previousProgressionCopy.type='button';previousProgressionCopy.textContent='Копия до обновления 0.5.1';previousProgressionCopy.addEventListener('click',()=>{
+    try{const raw=localStorage.getItem(OLD_PROGRESSION_BACKUP);if(!raw){$('#data-message').textContent='Прежних программ в этом браузере не было.';return;}const url=URL.createObjectURL(new Blob([raw],{type:'application/json'}));const a=document.createElement('a');a.href=url;a.download='mg150-before-progression-previous.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}catch(e){$('#data-message').textContent=e.message;}
+  });$('#data-dialog .actions').append(previousProgressionCopy);
   let scheduleDraft=null;
   const scheduleButton=document.createElement('button');scheduleButton.type='button';scheduleButton.textContent='Изменить цель и расписание';$('.info-content').append(scheduleButton);
   $('#schedule-weekdays').replaceChildren(...[...form.querySelectorAll('.weekday-options label')].map(e=>e.cloneNode(true)));
